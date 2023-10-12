@@ -97,7 +97,7 @@ class ChicagoDataPublisher:
 
 
 
-# Run the asynchronous function using asyncio
+# Publish daily data to Ensign
 if __name__ == "__main__":
     topic='publisher_test'
     publisher=ChicagoDataPublisher(token,topic)
