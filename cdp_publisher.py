@@ -100,5 +100,5 @@ class ChicagoDataPublisher:
 # Run the asynchronous function using asyncio
 if __name__ == "__main__":
     topic='publisher_test'
-    publisher=ChicagoDataPublisher(token)
+    publisher=ChicagoDataPublisher(token,topic)
     publisher.run()
