@@ -9,9 +9,6 @@ import json
 import asyncio
 from cdp_secrets import token,ensign_client,ensign_secret
 
-#Credentials
-#ensign=Ensign(client_id=ensign_client,client_secret=ensign_secret)
-
 #Event Handling
 async def handle_ack(ack):
     ts = datetime.fromtimestamp(ack.committed.seconds + ack.committed.nanos / 1e9)
@@ -22,12 +19,13 @@ async def handle_nack(nack):
 
 #CDP ETL
 class ChicagoDataPublisher:
-    def __init__(self, token, limit=1000000000):
+    def __init__(self, token, topic, limit=1000000000):
         self.chicago_url = "data.cityofchicago.org"
         self.vehicle_api_root = "68nd-jvt3"
         self.people_api_root = "u6pd-qa9d"
         self.crash_api_root = "85ca-t3if"
         self.limit = limit
+        self.topic = topic
         self.today = datetime.now().strftime("%Y-%m-%d")
         self.yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
         self.eighteen_months = (datetime.now() - relativedelta(months=18)).strftime("%Y-%m-%d")
@@ -88,10 +86,10 @@ class ChicagoDataPublisher:
         for record in data_dict:
             #print(record)
             event = Event(json.dumps(record).encode("utf-8"), mimetype="application/json") 
-            await ensign.publish('publisher_test', event, on_ack=handle_ack, on_nack=handle_nack)
+            await ensign.publish(self.topic, event, on_ack=handle_ack, on_nack=handle_nack)
         
         event = Event(json.dumps({"done":"yes"}).encode("utf-8"), mimetype="application/json")
-        await ensign.publish('publisher_test', event, on_ack=handle_ack, on_nack=handle_nack)
+        await ensign.publish(self.topic, event, on_ack=handle_ack, on_nack=handle_nack)
         await asyncio.sleep(10)  
 
     def run(self):
@@ -101,5 +99,6 @@ class ChicagoDataPublisher:
 
 # Run the asynchronous function using asyncio
 if __name__ == "__main__":
+    topic='publisher_test'
     publisher=ChicagoDataPublisher(token)
     publisher.run()
